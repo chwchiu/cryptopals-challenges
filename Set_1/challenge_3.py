@@ -1,45 +1,76 @@
-from challenge_2 import xor_strings
+from challenge_2 import hex_decode_to_byte
 
-def xor_strings(s1, s2): 
-    return bytes((b1 ^ b2) for b1, b2 in zip(s1, s2))
+def xor_string_by_byte(s, k): 
+    return bytes(b ^ k for b in s)
 
-def hex_decode_to_string(hex):
-    return bytes.fromhex(hex).decode('utf-8')
+def get_letter_frequency(letter):
+    # the space character is important, considering the text could be a sentence.
+    # we also penalize all the characters that do not appear in the letter frequencies
+    # have included some common punctuation
+    letter_frequencies = {
+        ' ': 0.080,
+        'a': 0.082,
+        'b': 0.015,
+        'c': 0.028,
+        'd': 0.043,
+        'e': 0.127,
+        'f': 0.022,
+        'g': 0.020,
+        'h': 0.061,
+        'i': 0.070,
+        'j': 0.0016,
+        'k': 0.0077,
+        'l': 0.040,
+        'm': 0.024,
+        'n': 0.067,
+        'o': 0.075,
+        'p': 0.019,
+        'q': 0.012,
+        'r': 0.060,
+        's': 0.063,
+        't': 0.091,
+        'u': 0.028,
+        'v': 0.0098,
+        'w': 0.024,
+        'x': 0.0015,
+        'y': 0.020,
+        'z': 0.00074,
+    }
+
+    return letter_frequencies.get(letter.lower(), -0.01)
+
+def score_res(res):
+    score = 0
+    for b in res:
+        score += get_letter_frequency(chr(b))
+
+    return score
+
+def get_most_probable_plaintext_and_key(cipher_text):
+    cur_highest_score = 0
+    cur_key = 0
+
+    for key in range(256):
+        res = xor_string_by_byte(cipher_text, key)
+        score = score_res(res)
+
+        if score > cur_highest_score: 
+            cur_highest_score = score
+            cur_key = key
+
+    return cur_key
 
 def main(): 
-    letter_frequencies = {
-        "a": 0.07743208627550165,
-        "b": 0.01402241586697527,
-        "c": 0.02665670667329359,
-        "d": 0.04920785702311875,
-        "e": 0.13464518994079883,
-        "f": 0.025036247121552113,
-        "g": 0.017007472935972733,
-        "h": 0.05719839895067157,
-        "i": 0.06294794236928244,
-        "j": 0.001267546400727001,
-        "k": 0.005084890317533608,
-        "l": 0.03706176274237046,
-        "m": 0.030277007414117114,
-        "n": 0.07125316518982316,
-        "o": 0.07380002176297765,
-        "p": 0.017513315119093483,
-        "q": 0.0009499245648139707,
-        "r": 0.06107162078305546,
-        "s": 0.061262782073188304,
-        "t": 0.08760480785349399,
-        "u": 0.030426995503298266,
-        "v": 0.01113735085743191,
-        "w": 0.02168063124398945,
-        "x": 0.0019880774173815607,
-        "y": 0.022836421813561863,
-        "z": 0.0006293617859758195,
-    }
-    
     cipher_text = "1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"
-    byte_str = hex_decode_to_string(cipher_text)
+    byte_str = hex_decode_to_byte(cipher_text)
 
-    print(byte_str)
+    ans_key = get_most_probable_plaintext_and_key(byte_str)
+
+    print(ans_key)
+
+    ans_plaintext = xor_string_by_byte(byte_str, ans_key)
+
+    print(bytes(ans_plaintext).decode('utf-8'))
     
 if __name__ == "__main__":
     main()
