@@ -1,35 +1,50 @@
-def string_to_binary(str): 
-    return ''.join(format(ord(c), '08b') for c in str)
+from challenge_4 import read_file
+import base64
 
-def binary_to_string(str):
-    return ''.join(format(b, '08b') for b in bytearray(str, 'utf-8'))
-
-def compute_hamming_distance(str_1, str_2): 
-    distance = 0
-    bin_1 = string_to_binary(str_1)
-    bin_2 = string_to_binary(str_2)
-
-    if len(bin_1) != len(bin_2):
+def compute_hamming_distance(byte_str_1, byte_str_2): 
+    if len(byte_str_1) != len(byte_str_2):
         raise ValueError("The lengths of the two strings are not equal")
     
-    for i, c in enumerate(bin_1):
-        print(bin_1[i])
-        print(bin_2[i])
-        distance += ord(bin_1[i]) ^ ord(bin_2[i])
+    distance = 0
+    for b1, b2 in zip(byte_str_1, byte_str_2):
+        distance += bin(b1 ^ b2).count('1')
 
     return distance
-        
+
+def compute_normalized_hamming_distance(ciphertext, keysize):
+    return compute_hamming_distance(ciphertext[0:keysize], ciphertext[keysize:keysize*2]) / keysize
 
 def main(): 
+    filename = "challenge_6.txt"
+    ciphertext = "".join(read_file(filename))
+    b64_decoded_ciphertext = base64.b64decode(ciphertext)
+
     # 1. Assumptions KEYSIZE is between 2 - 40
     # 2. Test Hamming Distance function
-    test_1 = "this is a test"
-    test_2 = "wokka wokka!!!"
+    test_1 = b'this is a test'
+    test_2 = b'wokka wokka!!!'
+
+    print(compute_hamming_distance(test_1, test_2))
 
     assert compute_hamming_distance(test_1, test_2) == 37, "The hamming distance function has been implemented incorrectly"
     print("The hamming distance function is implemented correctly")
 
+    # 3. Find Normalized Hamming Distance for all key sizes
+    nhd_arr = []
+    for i in range(2, 41):
+        nhd = compute_normalized_hamming_distance(b64_decoded_ciphertext, i)
+        nhd_arr.append((i, nhd))
     
+    # 4. Find the smallest 2-3 Key Sizes
+    sorted_nhd_arr = sorted(nhd_arr, key=lambda x:x[1])
+    min_3_nhd_arr = sorted_nhd_arr[0:3]
+
+    for keysize, _ in min_3_nhd_arr: 
+        # 5. Split the ciphertext into blocks of each keysize
+        ciphertext_blocks = [b64_decoded_ciphertext[i:i + keysize] for i in range(0, len(b64_decoded_ciphertext), keysize)]
+
+        # 6. Now transpose the blocks
+
 
 if __name__ == "__main__":
     main()
