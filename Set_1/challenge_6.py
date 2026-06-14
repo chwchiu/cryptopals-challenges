@@ -22,10 +22,9 @@ def compute_hamming_distance(byte_str_1, byte_str_2):
 #     return compute_hamming_distance(ciphertext[0:keysize], ciphertext[keysize:keysize*2]) / keysize
 
 def compute_normalized_hamming_distance(ciphertext, keysize):
-    # take up to NUM_NHD_BLOCKS blocks of length keysize
     blocks = [ciphertext[i:i+keysize] for i in range(0, keysize * NUM_NHD_BLOCKS, keysize)]
-    # keep only full-size blocks
     blocks = [b for b in blocks if len(b) == keysize]
+    
     if len(blocks) < 2:
         return compute_hamming_distance(ciphertext[0:keysize], ciphertext[keysize:keysize*2]) / keysize
 
